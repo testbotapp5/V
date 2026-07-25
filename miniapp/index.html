@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>Ovoz Arenasi</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ═══════════ SPLASH SCREEN (ochilishda, kamida 3 soniya) ═══════════ -->
+<div id="splash">
+  <div class="splash-glow"></div>
+  <div class="splash-icon-wrap">
+    <div class="splash-ring splash-ring--1"></div>
+    <div class="splash-ring splash-ring--2"></div>
+    <img class="splash-icon" src="assets/app-icon.png" alt="Ovoz Battle" width="512" height="512" />
+  </div>
+  <div class="splash-title">OVOZ BATTLE</div>
+  <div class="splash-sub">Arena yuklanmoqda…</div>
+  <div class="splash-progress"><div class="splash-progress-fill"></div></div>
+</div>
+
+<div id="app">
+
+  <!-- ═══════════ VIEW: CAPTCHA (birinchi kirishda tekshiruv) ═══════════ -->
+  <main class="view" id="view-captcha">
+    <div class="captcha-wrap">
+      <div class="captcha-orb-zone">
+        <canvas id="captcha-orb"></canvas>
+        <div class="captcha-orb-icon">🛡️</div>
+      </div>
+      <div class="captcha-title">Siz robot emasligingizni tasdiqlang</div>
+      <div class="captcha-sub">Davom etish uchun quyidagi misolni yeching</div>
+
+      <div class="captcha-question" id="captcha-question">—</div>
+
+      <div class="captcha-options" id="captcha-options"></div>
+
+      <div class="captcha-attempts" id="captcha-attempts"></div>
+    </div>
+  </main>
+
+  <!-- ═══════════ VIEW: CAPTCHA BLOKLANGAN ═══════════ -->
+  <main class="view" id="view-blocked">
+    <div class="captcha-wrap">
+      <div class="blocked-icon">⏳</div>
+      <div class="captcha-title">Vaqtincha bloklandingiz</div>
+      <div class="captcha-sub">Noto'g'ri javoblar soni ko'p bo'lgani uchun quyidagi vaqt tugaguncha kuting:</div>
+      <div class="blocked-timer" id="blocked-timer">00:00</div>
+    </div>
+  </main>
+
+  <!-- ═══════════ VIEW: OBUNA TALABI (majburiy kanallar) ═══════════ -->
+  <main class="view" id="view-gate">
+    <div class="gate-wrap">
+      <div class="gate-icon">🔒</div>
+      <div class="gate-title">Davom etish uchun obuna bo'ling</div>
+      <div class="gate-sub">Botdan foydalanish uchun quyidagi kanallarga obuna bo'lishingiz kerak:</div>
+      <div class="gate-channels" id="gate-channels"></div>
+      <button class="btn btn-primary btn-block" id="gate-check">✅ Tekshirish</button>
+    </div>
+  </main>
+
+  <!-- ═══════════ TOP BAR ═══════════ -->
+  <header class="topbar">
+    <div class="topbar-user">
+      <div class="avatar" id="user-avatar">
+        <video class="avatar-globe" autoplay loop muted playsinline disablepictureinpicture>
+          <source src="assets/globe-avatar.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="user-meta">
+        <div class="user-name" id="user-name">—</div>
+        <div class="user-sub" id="user-sub">Ovoz Arenasi</div>
+      </div>
+    </div>
+    <div class="stat-chip" id="stat-chip">
+      <span class="stat-chip-num" id="stat-battles">0</span>
+      <span class="stat-chip-label">battle</span>
+    </div>
+  </header>
+
+  <!-- ═══════════ VIEW: HOME ═══════════ -->
+  <main class="view active" id="view-home">
+
+    <section class="hero">
+      <div class="hero-eyebrow">Arena ochiq</div>
+      <h1 class="hero-title">G'alaba shu yerdan boshlanadi</h1>
+      <p class="hero-sub">Kanalingiz uchun ovoz-battle, konkurs yoki like-battle — bir necha soniyada.</p>
+    </section>
+
+    <section class="mode-grid">
+      <button class="mode-card mode-card--vote" data-mode="battle">
+        <div class="mode-icon-badge">🏆</div>
+        <div class="mode-name">Ovoz Battle</div>
+        <div class="mode-desc">Ishtirokchilar do'stlaridan ovoz yig'adi</div>
+        <div class="mode-glow"></div>
+        <div class="mode-arrow">→</div>
+      </button>
+
+      <button class="mode-card mode-card--random" data-mode="random">
+        <div class="mode-icon-badge">🎲</div>
+        <div class="mode-name">Random Konkurs</div>
+        <div class="mode-desc">Qatnashuvchilar orasidan tasodifiy g'olib</div>
+        <div class="mode-glow"></div>
+        <div class="mode-arrow">→</div>
+      </button>
+
+      <button class="mode-card mode-card--like" data-mode="like">
+        <div class="mode-icon-badge">🥊</div>
+        <div class="mode-name">Like Battle</div>
+        <div class="mode-desc">Reaksiya, comment va ⭐ Stars orqali ball</div>
+        <div class="mode-glow"></div>
+        <div class="mode-arrow">→</div>
+      </button>
+    </section>
+
+    <section class="section-block" id="templates-block" hidden>
+      <div class="section-head">
+        <span class="section-title">Shablonlaringiz</span>
+      </div>
+      <div class="template-scroll" id="template-scroll"></div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-head">
+        <span class="section-title">Barchalarim</span>
+        <button class="section-refresh" id="refresh-battles">↻</button>
+      </div>
+      <div class="tab-row" id="mine-tabs">
+        <button class="tab-btn active" data-tab="battle">🏆 Battle</button>
+        <button class="tab-btn" data-tab="random">🎲 Konkurs</button>
+        <button class="tab-btn" data-tab="like">🥊 Like</button>
+      </div>
+      <div class="battle-list" id="battle-list">
+        <div class="empty-state">
+          <div class="empty-emoji">✨</div>
+          <div class="empty-text">Hali yaratmadingiz</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════ VIEW: CREATE WIZARD ═══════════ -->
+  <main class="view" id="view-create">
+    <div class="wizard-head">
+      <button class="icon-btn" id="wizard-back">←</button>
+      <div class="wizard-title" id="wizard-title">Battle yaratish</div>
+      <div class="wizard-step-dots" id="wizard-dots"></div>
+    </div>
+
+    <div class="wizard-body" id="wizard-body"></div>
+  </main>
+
+  <!-- ═══════════ VIEW: SUCCESS ═══════════ -->
+  <main class="view" id="view-success">
+    <div class="success-wrap">
+      <div class="success-badge">
+        <div class="success-ring"></div>
+        <div class="success-check">✓</div>
+      </div>
+      <div class="success-title">Yaratildi!</div>
+      <div class="success-sub" id="success-sub">Battle kanalga muvaffaqiyatli yuborildi.</div>
+      <button class="btn btn-primary btn-block" id="success-done">Ajoyib!</button>
+    </div>
+  </main>
+
+</div>
+
+<!-- Pastdan chiqadigan modal-sheet (kanal tanlash, xatolar va h.k.) -->
+<div class="sheet-overlay" id="sheet-overlay">
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content" id="sheet-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="sound.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
